@@ -1,0 +1,41 @@
+# date Functions
+
+from pyspark.sql.functions import *
+path = 'dbfs:/FileStore/tables/empmysql.csv'
+spark.conf.set("spark.sql.legacy.timeParserPolicy", "LEGACY")
+
+df = spark.read.format("csv").option("header", "true").option("inferschema", "true").load(path)
+
+df.show()
+
+# to_date(col, format)
+# current_date() ==> gives current_date
+# current_time_stamp() ==> gives current_time and date
+#dayofweek() == return the day of week, if sunday then 7 if monday then 1
+
+#df.withColumn("hiredate", to_date(col("hiredate"), "dd-MMM-yyyy")).show()
+ndf = df.withColumn("hiredate", to_date(col("hiredate"), "dd-MMM-yyyy"))\
+    .withColumn("current_dt", current_date())
+ndf.show()
+
+jk= df.withColumn("now", minute(current_timestamp()))\
+    .withColumn("hiredate", to_date(col("hiredate"), "dd-MMM-yyyy"))\
+        .withColumn("day_week", dayofweek(col("hiredate")))\
+            .withColumn("day_of_month", dayofmonth(col("hiredate")))\
+                .withColumn("day_of_year", dayofyear(col("hiredate")))\
+                    .withColumn("daysw", dayofyear(col("hiredate")))
+
+jk= df.withColumn("now", minute(current_timestamp()))\
+    .withColumn("hiredate", to_date(col("hiredate"), "dd-MMM-yyyy"))\
+        .withColumn("day_week", dayofweek(col("hiredate")))\
+            .withColumn("day_of_month", dayofmonth(col("hiredate")))\
+                .withColumn("day_of_year", dayofyear(col("hiredate")))\
+                    .withColumn("daysw", dayofyear(col("hiredate")))\
+                        .withColumn("dfs", date_trunc("year",col("hiredate")))\
+                            .withColumn("dayr", date_format(col("dfs"), "%m")).show()
+
+
+jk= df.withColumn("now", minute(current_timestamp()))\
+    .withColumn("hiredate", to_date(col("hiredate"), "dd-MMM-yyyy"))\
+    .withColumn("slary_dt", next_day(date_add(last_day(col("hiredate")), -7), "fri"))\
+        .withColumn("next_dt", next_day(col("hiredate"), "sunday")).show()
